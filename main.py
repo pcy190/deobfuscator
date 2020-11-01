@@ -13,6 +13,7 @@ from util.block import BlockContainer, Block
 
 import queue
 
+
 # Powered by HAPPY
 
 class DeflatEmu:
@@ -168,14 +169,11 @@ class DeflatEmu:
 
                 # pass for x86
             should_skip = True
-        # TODO: Maybe we can detect whether the program will access unmapped
-        #       here so that we won't map the memory.
 
         if self.verbose_hook:
             self.logger.debug("> 0x%x:\t%s\t%s" % (instruction.address, instruction.mnemonic, instruction.op_str))
             self.logger.debug("instruction size %d" % (size))
 
-        # FIXME : Only allow stack r/w operation
         if ql.archtype != QL_ARCH.ARM64:
             raise Exception("todo")
         # if instruction.op_str.find('sp') == -1:
@@ -742,7 +740,7 @@ if __name__ == '__main__':
     # add some special trampolines
     print("now running emu")
     emulator = DeflatEmu(analyzer, './rootfs/arm64_android')
-    emulator.search_path(strategy=0)
+    emulator.search_path(strategy=0) # or strategy=1
     emulator.patch_code()
 
 
