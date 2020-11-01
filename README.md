@@ -22,7 +22,7 @@ requirements:
 - python3.7 +
 - dependencies:
 ```
-pip3 install qiling angr termcolor
+pip3 install qiling angr termcolor capstone keystone
 ```
 
 modify the start address and filename in `main.py`, and 
