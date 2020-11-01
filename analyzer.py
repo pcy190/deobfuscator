@@ -4,12 +4,8 @@ import angr
 from angr.knowledge_plugins import FunctionManager
 from angr.knowledge_plugins import CFGManager
 from util import graph
-# from angr.analyses import CFGFast
-import angr.analyses as analyses
 import angr.analyses.analysis
-from angr.analyses.cfg import *
 
-import networkx
 from termcolor import colored
 
 import logging
@@ -21,7 +17,9 @@ logging.getLogger('angr.sim_manager').setLevel(logging.ERROR)
 logging.getLogger('angr').setLevel(logging.ERROR)
 
 
-class Analyzer():
+# Powered by HAPPY
+
+class Analyzer:
 
     def __init__(self, filename):
         # self.super_graph: networkx.DiGraph
@@ -183,17 +181,10 @@ class DeflatAnalyzer(Analyzer):
             if node not in self.real_nodes and node not in virgin_nodes:
                 self.irrelevant_nodes.append(node)
         print(f"irrelevant_nodes: {self.irrelevant_nodes}")
-        # n: SuperCFGNode = self.relevant_nodes[0]
-        # print(n.addr)
-        # print(n.cfg_nodes[0].bytestr)
-        # lookup n.size for block size
-        # 4275736 20
-        # self.relevant_block_addr_list = [node.addr for node in self.relevant_nodes]
 
-    def show_relevant_blocks(self, level=0):
+    def show_blocks_info(self, level=0):
         print(f"highest_address_boundary : {hex(self.highest_address_boundary)}")
-        print(
-            f"prologue addr {hex(self.prologue_node.addr)} ~ {hex(self.prologue_node.addr + self.prologue_node.size)}")
+        print(f"prologue addr {hex(self.prologue_node.addr)} ~ {hex(self.prologue_node.addr + self.prologue_node.size)}")
         print(f"main dispatch node: {hex(self.main_dispatcher_node.addr)}")
         print(f" {len(self.relevant_nodes)} relevant nodes found.")
         print(self.relevant_nodes)
@@ -217,4 +208,4 @@ if __name__ == '__main__':
     # load_to_angr('example/lib64_example.so', 0x13C88)
     analyzer = DeflatAnalyzer('example/lib64_example.so')
     analyzer.analysis_flatten_blocks(0x13C88)
-    analyzer.show_relevant_blocks()
+    analyzer.show_blocks_info()

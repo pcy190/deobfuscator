@@ -13,6 +13,7 @@ from util.block import BlockContainer, Block
 
 import queue
 
+# Powered by HAPPY
 
 class DeflatEmu:
     block_container: BlockContainer
@@ -737,7 +738,7 @@ if __name__ == '__main__':
     filename = 'example/lib64_example.so'
     analyzer = DeflatAnalyzer(filename)
     analyzer.analysis_flatten_blocks(0x13C88)  # 0x13040 0x13C88
-    analyzer.show_relevant_blocks()
+    analyzer.show_blocks_info()
     # add some special trampolines
     print("now running emu")
     emulator = DeflatEmu(analyzer, './rootfs/arm64_android')

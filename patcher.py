@@ -1,14 +1,13 @@
-import os
-from elftools import *
-# pip3 install cmake lief
+# Powered by HAPPY
+
 
 class Patcher:
     binary: bytes
     patched_filename: str
-    filename : str
+    filename: str
 
     def __init__(self, filename: str, suffix: str = ".patched"):
-        self.filename=filename
+        self.filename = filename
         with open(filename, 'rb') as f:
             self.binary = f.read()
             self.patched_filename = filename + suffix
@@ -23,16 +22,13 @@ class Patcher:
     def copy_to_patch(self, to_address, from_address, size):
         """
         copy binary bytes
-        :param to_address:
-        :param from_address:
-        :param size:
         """
         assert len(self.binary) >= from_address + size
 
         self.patch(to_address, size, self.binary[from_address:from_address + size])
 
     @staticmethod
-    def _force_bytes(data, encoding="utf-8"):
+    def _force_bytes(data):
         if isinstance(data, bytes):
             return data
 

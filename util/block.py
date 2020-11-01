@@ -3,6 +3,8 @@ from typing import List, Any, Mapping, Dict
 from util.graph import SuperCFGNode
 
 
+# Powered by HAPPY
+
 class Block:
     size: int
     start_addr: int
@@ -71,5 +73,5 @@ class BlockContainer:
         #         return self._fast_lookup_table[i][2]  # return idx
         return -1
 
-    def get_block_address_from_address(self,address):
+    def get_block_address_from_address(self, address):
         return self.get_block_from_id(self.get_block_id_from_address(addr=address)).start_addr

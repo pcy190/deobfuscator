@@ -2,12 +2,14 @@ from capstone.arm64 import *
 from keystone import *
 
 
+# Powered by HAPPY
+
 def get_branch_instruction_types():
     return [ARM64_INS_CSEL]
 
 
 def get_call_instruction_types():
-    return [ARM64_INS_BLR,ARM64_INS_BL,ARM64_INS_BRK,ARM64_INS_BR]
+    return [ARM64_INS_BLR, ARM64_INS_BL, ARM64_INS_BRK, ARM64_INS_BR]
 
 
 def get_function_ret_types():

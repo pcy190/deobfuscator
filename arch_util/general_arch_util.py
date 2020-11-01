@@ -11,6 +11,8 @@ from qiling.exception import QlErrorArch
 import arch_util.arm64_util as arm64_util
 
 
+# Powered by HAPPY
+
 def get_op_reg_const(qiling_arch):
     if qiling_arch == QL_ARCH.X86:
         return X86_OP_REG
