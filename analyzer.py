@@ -1,15 +1,12 @@
+import logging
 from typing import List
 
-import angr
-from angr.knowledge_plugins import FunctionManager
-from angr.knowledge_plugins import CFGManager
-from util import graph
 import angr.analyses.analysis
-
+from angr.knowledge_plugins import CFGManager
+from angr.knowledge_plugins import FunctionManager
 from termcolor import colored
 
-import logging
-
+from util import graph
 from util.graph import SuperCFGNode
 
 logging.getLogger('angr.state_plugins.symbolic_memory').setLevel(logging.ERROR)

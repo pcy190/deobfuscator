@@ -1,17 +1,22 @@
 import logging
-from typing import List, Any, Union, Tuple
+import queue
+from typing import Any
+from typing import List
+from typing import Tuple
+from typing import Union
 
 from capstone import Cs
 from elftools.elf.elffile import ELFFile
 from qiling import *
 from qiling.const import *
 from qiling.os.utils import UcError
-from analyzer import DeflatAnalyzer
-from arch_util import arm64_util, general_arch_util
-from patcher import Patcher
-from util.block import BlockContainer, Block
 
-import queue
+from analyzer import DeflatAnalyzer
+from arch_util import arm64_util
+from arch_util import general_arch_util
+from patcher import Patcher
+from util.block import Block
+from util.block import BlockContainer
 
 
 # Powered by HAPPY
