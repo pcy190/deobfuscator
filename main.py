@@ -9,5 +9,7 @@ if __name__ == '__main__':
     # add some special trampolines
     print("now running emu")
     emulator = DeflatEmu(analyzer, './rootfs/arm64_android')
-    emulator.search_path(strategy=0) # or strategy=1
+    emulator.search_path(strategy=0)  # or strategy=1
     emulator.patch_code()
+
+
