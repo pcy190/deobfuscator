@@ -30,7 +30,7 @@ class Analyzer:
         :return:
         """
         project = angr.Project(self.filename,
-                               load_options={'auto_load_libs': False, 'main_opts': {'custom_base_addr': 0}}, )
+                               load_options={'auto_load_libs': False, 'main_opts': {'base_addr': 0}}, )
         # do normalize to avoid overlapping blocks, disable force_complete_scan to avoid possible "wrong" blocks
         # angr.analysis.Analyses
 

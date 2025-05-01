@@ -9,7 +9,6 @@ from capstone import Cs
 from elftools.elf.elffile import ELFFile
 from qiling import *
 from qiling.const import *
-from qiling.os.utils import UcError
 
 from analyzer import DeflatAnalyzer
 from arch_util import arm64_util
@@ -91,7 +90,7 @@ class DeflatEmu:
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
 
-        self.arch_type = self.emu.ql.archtype
+        self.arch_type = self.emu.ql.arch.type
 
     def _disasm(self, ql: Qiling, address, size):
         if self.md is None:
@@ -108,7 +107,7 @@ class DeflatEmu:
         # return reg_info
         reg_list = []
         for i in instruction.operands:
-            if i.type == general_arch_util.get_op_reg_const(self.emu.ql.archtype):
+            if i.type == general_arch_util.get_op_reg_const(self.emu.ql.arch.type):
                 reg_list.append(instruction.reg_name(i.value.reg))
         return reg_list
 
@@ -143,34 +142,34 @@ class DeflatEmu:
         if "force" in self.hook_data and addr in self.hook_data['force']:
             if self.hook_data['force'][addr]:
                 self.logger.debug(f"force true on {hex(addr - self.base_addr)}")
-                if ql.archtype == QL_ARCH.X8664 or ql.archtype == QL_ARCH.X86:
+                if ql.arch.type == QL_ARCH.X8664 or ql.arch.type == QL_ARCH.X86:
                     # cmov
                     reg1 = self._get_reg_operand(instruction, 0)
                     reg2 = self._get_reg_operand(instruction, 1)
-                    reg2_val = ql.reg.__getattribute__(reg2)
+                    reg2_val = ql.arch.regs.read(reg2)
                     assert reg2_val is not None
-                    ql.reg.__setattr__(reg1, reg2_val)
-                elif ql.archtype == QL_ARCH.ARM64:
+                    ql.arch.regs.write(reg1, reg2_val)
+                elif ql.arch.type == QL_ARCH.ARM64:
                     # csel A B C
                     # A <- B
                     reg1 = self._get_reg_operand(instruction, 0)
                     reg2 = self._get_reg_operand(instruction, 1)
-                    reg2_val = ql.reg.__getattribute__(reg2)
+                    reg2_val = ql.arch.regs.read(reg2)
                     assert reg2_val is not None
-                    ql.reg.__setattr__(reg1, reg2_val)
+                    ql.arch.regs.write(reg1, reg2_val)
                 else:
                     raise Exception("haven't impl yet.")
             else:
                 self.logger.debug(f"force false on {hex(addr - self.base_addr)}")
 
-                if ql.archtype == QL_ARCH.ARM64:
+                if ql.arch.type == QL_ARCH.ARM64:
                     # csel A B C
                     # A <- C
                     reg1 = self._get_reg_operand(instruction, 0)
                     reg2 = self._get_reg_operand(instruction, 2)
-                    reg2_val = ql.reg.__getattribute__(reg2)
+                    reg2_val = ql.arch.regs.read(reg2)
                     assert reg2_val is not None
-                    ql.reg.__setattr__(reg1, reg2_val)
+                    ql.arch.regs.write(reg1, reg2_val)
 
                 # pass for x86
             should_skip = True
@@ -179,7 +178,7 @@ class DeflatEmu:
             self.logger.debug("> 0x%x:\t%s\t%s" % (instruction.address, instruction.mnemonic, instruction.op_str))
             self.logger.debug("instruction size %d" % (size))
 
-        if ql.archtype != QL_ARCH.ARM64:
+        if ql.arch.type != QL_ARCH.ARM64:
             raise Exception("todo")
         # if instruction.op_str.find('sp') == -1:
         #     self.logger.debug(
@@ -193,19 +192,19 @@ class DeflatEmu:
                 should_skip = True
 
         # skip caller
-        if instruction.id in general_arch_util.get_call_types(ql.archtype):
+        if instruction.id in general_arch_util.get_call_types(ql.arch.type):
             self.logger.debug("skip call instruction")
             should_skip = True
-        if instruction.id in general_arch_util.get_function_ret_types(ql.archtype):
+        if instruction.id in general_arch_util.get_function_ret_types(ql.arch.type):
             ql.emu_stop()
 
         if should_skip:
             if self.verbose_hook:
-                self.logger.debug(f"PC is {hex(ql.reg.arch_pc)}")
+                self.logger.debug(f"PC is {hex(ql.arch.regs.arch_pc)}")
                 self.logger.debug(f"addr is {hex(addr)}")
-            ql.reg.arch_pc += size
+            ql.arch.regs.arch_pc += size
             if self.verbose_hook:
-                self.logger.debug(f"PC guided to {hex(ql.reg.arch_pc)}")
+                self.logger.debug(f"PC guided to {hex(ql.arch.regs.arch_pc)}")
 
         if start_block_id == current_block_id:
             return
@@ -228,7 +227,7 @@ class DeflatEmu:
         return True
 
     def _is_branch_type_instruction(self, address, size):
-        if self.emu.ql.archtype == QL_ARCH.ARM64:
+        if self.emu.ql.arch.type == QL_ARCH.ARM64:
             target_branch_types = arm64_util.get_branch_instruction_types()
         else:
             raise Exception("Haven't impl yet.")
@@ -246,7 +245,7 @@ class DeflatEmu:
         instruction_list = self.md.disasm(block.code, block.start_addr)
 
         # only support arm64 currently
-        if self.emu.ql.archtype == QL_ARCH.ARM64:
+        if self.emu.ql.arch.type == QL_ARCH.ARM64:
             target_branch_types = arm64_util.get_branch_instruction_types()
         else:
             raise Exception("Haven't impl yet.")
@@ -331,7 +330,7 @@ class DeflatEmu:
         instruction = self._disasm(ql, addr, size)
 
         should_skip = False
-        if ql.archtype != QL_ARCH.ARM64:
+        if ql.arch.type != QL_ARCH.ARM64:
             raise Exception("todo")
 
         if instruction.op_str.find('[') != -1:
@@ -341,25 +340,25 @@ class DeflatEmu:
                 should_skip = True
 
         # skip caller
-        if instruction.id in general_arch_util.get_call_types(ql.archtype):
+        if instruction.id in general_arch_util.get_call_types(ql.arch.type):
             self.logger.debug("skip call instruction")
             should_skip = True
         # stop at ret
-        if instruction.id in general_arch_util.get_function_ret_types(ql.archtype):
+        if instruction.id in general_arch_util.get_function_ret_types(ql.arch.type):
             self.logger.debug("dfs_success for ret")
             self.dfs_success = False
             ql.emu_stop()
 
         if instruction.id in arm64_util.get_branch_instruction_types():
-            assert ql.archtype == QL_ARCH.ARM64
+            assert ql.arch.type == QL_ARCH.ARM64
             if not self.dfs_branch_force:
                 # csel A B C cond
                 # A <- B
                 reg1 = self._get_reg_operand(instruction, 0)
                 reg2 = self._get_reg_operand(instruction, 1)
-                reg2_val = ql.reg.__getattribute__(reg2)
+                reg2_val = ql.arch.regs.read(reg2)
                 assert reg2_val is not None
-                ql.reg.__setattr__(reg1, reg2_val)
+                ql.arch.regs.write(reg1, reg2_val)
                 if self.verbose_hook:
                     self.logger.debug(f"force false on {hex(addr - self.base_addr)}")
 
@@ -368,19 +367,19 @@ class DeflatEmu:
                 # A <- C
                 reg1 = self._get_reg_operand(instruction, 0)
                 reg2 = self._get_reg_operand(instruction, 2)
-                reg2_val = ql.reg.__getattribute__(reg2)
+                reg2_val = ql.arch.regs.read(reg2)
                 assert reg2_val is not None
-                ql.reg.__setattr__(reg1, reg2_val)
-            # ql.reg.arch_pc += size
+                ql.arch.regs.write(reg1, reg2_val)
+            # ql.arch.regs.arch_pc += size
             should_skip = True
 
         if should_skip:
             if self.verbose_hook:
-                self.logger.debug(f"PC is {hex(ql.reg.arch_pc)}")
+                self.logger.debug(f"PC is {hex(ql.arch.regs.arch_pc)}")
                 self.logger.debug(f"addr is {hex(addr)}")
-            ql.reg.arch_pc += size
+            ql.arch.regs.arch_pc += size
             if self.verbose_hook:
-                self.logger.debug(f"PC guided to {hex(ql.reg.arch_pc)}")
+                self.logger.debug(f"PC guided to {hex(ql.arch.regs.arch_pc)}")
 
     def dfs(self, address, branch=None):
         self.cached_instructions_history = []
@@ -390,7 +389,7 @@ class DeflatEmu:
         try:
             self.emu.run(address)
             self.dfs_start_address = address
-        except UcError as e:
+        except Exception as e:
             pass
         if self.dfs_success:
             return self.dfs_next_addr
@@ -702,20 +701,20 @@ class Emulator:
         self.path = filename
         self.rootfs = rootfs
         # rootfs=self.rootfs
-        self.ql = Qiling(filename=[self.path], rootfs=self.rootfs, )  # output="debug", verbose=1
+        self.ql = Qiling([self.path], rootfs=self.rootfs)  # output="debug", verbose=1
         self.status = None
         self.exit_addr = None
 
-        if self.ql.ostype == QL_OS.LINUX:
+        if self.ql.os.type == QL_OS.LINUX:
             f = open(self.ql.path, 'rb')
             elf_file = ELFFile(f)
             elf_header = elf_file.header
             if elf_header['e_type'] == 'ET_EXEC':
                 self.base_addr = self.ql.os.elf_mem_start
             elif elf_header['e_type'] == 'ET_DYN':
-                if self.ql.archbit == 32:
+                if self.ql.arch.bits == 32:
                     self.base_addr = int(self.ql.os.profile.get("OS32", "load_address"), 16)
-                elif self.ql.archbit == 64:
+                elif self.ql.arch.bits == 64:
                     self.base_addr = int(self.ql.os.profile.get("OS64", "load_address"), 16)
         else:
             self.base_addr = 0x0
@@ -740,7 +739,8 @@ class Emulator:
 
 class BinaryTest():
     def test_binary(self):
-        ql = Qiling(["example/lib64_example.so"], "rootfs/arm64_android", output="debug")
-        print(ql.os.elf_mem_start)
+        ql = Qiling(["example/lib64_example.so"], "rootfs/arm64_android", verbose=QL_VERBOSE.DEBUG)
+        print(ql.loader.load_address)
         base = int(ql.os.profile.get("OS64", "load_address"), 16)
+        print(base)
         ql.run(begin=0x13C88 + base, end=0x13CA0 + base)

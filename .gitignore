@@ -132,6 +132,5 @@ dmypy.json
 /.idea
 
 # deobfuscator related
-/rootfs
 /example
 /tmp

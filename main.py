@@ -1,10 +1,10 @@
 from analyzer import DeflatAnalyzer
-from emulator import DeflatEmu
+from emulator import DeflatEmu, BinaryTest
 
 if __name__ == '__main__':
-    filename = 'example/lib64_example.so'
+    filename = 'example/libVPhoneGaGaLib.so'
     analyzer = DeflatAnalyzer(filename)
-    analyzer.analysis_flatten_blocks(0x13C88)  # 0x13040 0x13C88
+    analyzer.analysis_flatten_blocks(0x57FE38)  # 0x13040 0x13C88
     analyzer.show_blocks_info()
     # add some special trampolines
     print("now running emu")
